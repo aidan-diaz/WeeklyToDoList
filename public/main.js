@@ -1,6 +1,21 @@
 var leftArrow = document.getElementsByClassName("bi-arrow-left-square-fill");
 var rightArrow = document.getElementsByClassName("bi-arrow-right-square-fill");
+var item = document.getElementsByClassName("item");
 var trash = document.getElementsByClassName("bi-trash-fill");
+
+Array.from(item).forEach(function(element) {
+  element.addEventListener('click', function(){
+    const task = this.parentNode.childNodes[1]
+    console.log(task)
+  if(!task.classList.contains('grayOut')) {
+    task.classList.add('grayOut')
+  }else {
+    task.classList.remove('grayOut')
+  }
+
+  });
+});
+
 
 Array.from(leftArrow).forEach(function(element) {
   element.addEventListener('click', function(){
