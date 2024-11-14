@@ -9,11 +9,11 @@ module.exports = function(app, passport, db) {
 
     // PROFILE SECTION =========================
     app.get('/profile', isLoggedIn, function(req, res) {
-        db.collection('messages').find().toArray((err, result) => {
+        db.collection('tasks').find({user: req.user}).toArray((err, result) => {
           if (err) return console.log(err)
           res.render('profile.ejs', {
             user : req.user,
-            messages: result
+            tasks: result
           })
         })
     });
@@ -29,19 +29,19 @@ module.exports = function(app, passport, db) {
 
 // message board routes ===============================================================
 
-    app.post('/messages', (req, res) => {
-      db.collection('messages').save({name: req.body.name, msg: req.body.msg, thumbUp: 0}, (err, result) => {
+    app.post('/task', (req, res) => {
+      db.collection('tasks').save({user: req.user, task: req.body.task, day: req.body.day}, (err, result) => {
         if (err) return console.log(err)
         console.log('saved to database')
         res.redirect('/profile')
       })
     })
 
-    app.put('/messagesUp', (req, res) => {
-      db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+    app.put('/moveLeft', (req, res) => {
+      db.collection('tasks')
+      .findOneAndUpdate({user: req.user, task: req.body.task, day: req.body.day}, {
         $set: {
-          thumbUp:req.body.thumbUp + 1
+          day: moveLeft(req.body.day)
         }
       }, {
         sort: {_id: -1},
@@ -52,11 +52,11 @@ module.exports = function(app, passport, db) {
       })
     })
 
-    app.put('/messagesDown', (req, res) => {
-      db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+    app.put('/moveRight', (req, res) => {
+      db.collection('tasks')
+      .findOneAndUpdate({user: req.user, task: req.body.task, day: req.body.day}, {
         $set: {
-          thumbUp:req.body.thumbUp - 1
+          day: moveRight(req.body.day)
         }
       }, {
         sort: {_id: -1},
@@ -67,9 +67,10 @@ module.exports = function(app, passport, db) {
       })
     })
 
-    app.delete('/messages', (req, res) => {
-      db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
+    app.delete('/deleteTask', (req, res) => {
+      db.collection('tasks').findOneAndDelete({user: req.user, task: req.body.task, day: req.body.day}, (err, result) => {
         if (err) return res.send(500, err)
+        console.log(req.body.day)
         res.send('Message deleted!')
       })
     })
@@ -130,4 +131,58 @@ function isLoggedIn(req, res, next) {
         return next();
 
     res.redirect('/');
+}
+
+
+
+function moveLeft(day) {
+  switch (day) {
+    case 'monday':
+      return 'sunday';
+      break;
+    case 'sunday':
+      return 'saturday';
+      break;
+    case 'saturday':
+      return 'friday';
+      break;
+    case 'friday':
+      return 'thursday';
+      break;
+    case 'thursday':
+      return 'wednesday';
+      break;
+    case 'wednesday':
+      return 'tuesday';
+      break;
+    case 'tuesday':
+      return 'monday';
+      break;
+  }
+}
+
+function moveRight(day) {
+  switch (day) {
+    case 'monday':
+      return 'tuesday';
+      break;
+    case 'tuesday':
+      return 'wednesday';
+      break;
+    case 'wednesday':
+      return 'thursday';
+      break;
+    case 'thursday':
+      return 'friday';
+      break;
+    case 'friday':
+      return 'saturday';
+      break;
+    case 'saturday':
+      return 'sunday';
+      break;
+    case 'sunday':
+      return 'monday';
+      break;
+  }
 }
